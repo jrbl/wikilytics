@@ -25,7 +25,6 @@ class Data(object):
         covariance = numpy.cov(norm_data)        # 3
         self.covariance = covariance
         eigValues, eigVectors = scipy.linalg.eig(covariance) # 4
-        eigValues = abs(eigValues)
         components = self._chooseComponents(eigValues, eigVectors, compCount)   # 5
         self.components = components
         self.labeledComponents = [self._headings[x+1] for x in components]
