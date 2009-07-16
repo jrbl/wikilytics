@@ -1,0 +1,7 @@
+Cf. http://forge.blueoxen.net/wiki/Wiki_Analytics
+and http://jrbl.livejournal.com/108325.html
+
+pca/
+  - initial pass at pca implementation, might generalize into do-all
+    data handling library at some point
+
