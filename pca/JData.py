@@ -1,4 +1,23 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""JData - a simple statistical data modeling class, abstracting away some of SciPy
+
+Copyright (C) 2009  Joe Blaylock <jrbl@jrbl.org>
+
+This program is free software: you can redistribute it and/or modify it under 
+the terms of the GNU General Public License as published by the Free Software 
+Foundation, either version 3 of the License, or (at your option) any later 
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT 
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more 
+details.
+
+You should have received a copy of the GNU General Public License along with 
+this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
 
 import sys
 import numpy, scipy, scipy.linalg
@@ -10,7 +29,7 @@ EPSILON = 1e-8                         # maximum distance w/in which we consider
 # A class to represent data and to do PCA:
 #   FIXME: incomplete; copy in additional functionality from below
 
-class Data(object):
+class JData(object):
     """Models the behavior of some pile of data."""
 
     def __init__(self, fileURL = "data.csv", compCount = -1):
@@ -95,7 +114,7 @@ def test_ObjectAllComponents():
 
     This can also be used as a recipe for performing a real PCA.
     """
-    data = Data("data.csv", -1)
+    data = JData("data.csv", -1)
     eVecs = data.eigenVectors
     features = [eVecs[x].tolist() for x in data.components] # Step 5.5: building feature matrix
     features = numpy.atleast_1d(features)
@@ -121,5 +140,5 @@ if __name__ == "__main__":
         print "FAILURE"
         sys.exit()
 
-    d = Data("data.csv", 3)
+    d = JData("data.csv", 3)
     print d.labeledComponents

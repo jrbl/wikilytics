@@ -5,3 +5,5 @@ pca/
   - initial pass at pca implementation, might generalize into do-all
     data handling library at some point
 
+kmeans/
+  - k-means clustering of a dataset; relies on JData in pca/
