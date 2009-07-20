@@ -51,8 +51,11 @@ if __name__ == "__main__":
 
     c_sizes = {}
     small_i = 0
+    print "Cluster Sizes: ",
     for i in range(CLUSTERS):
         c_sizes[i] = count(codes, i)
+        print c_sizes[i],
+    print
     for i in range(CLUSTERS):
         if c_sizes[i] < c_sizes[small_i]: 
             small_i = i
