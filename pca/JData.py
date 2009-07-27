@@ -33,9 +33,11 @@ class JData(object):
     """Models the behavior of some pile of data."""
 
     def __init__(self, fileURL = "data.csv", compCount = -1):
+        """FIXME: Use reset() to avoid code reproduction."""
         self._headings = []
         self._names    = []
-        self._means    = []
+        self.means     = []
+        self.sigmas    = []
 
         data = self._getSomeData(fileURL)        # 1
         self.data = data
@@ -46,8 +48,14 @@ class JData(object):
         eigValues, eigVectors = scipy.linalg.eig(covariance) # 4
         components = self._chooseComponents(eigValues, eigVectors, compCount)   # 5
         self.components = components
-        self.labeledComponents = [self._headings[x+1] for x in components]
         self.eigenVectors = eigVectors
+        self.eigenValues = eigValues
+
+        self.sigmas                       = [numpy.sqrt(numpy.var(col)) for col in data]
+        sum_of_variances                  = sum([x*x for x in self.sigmas])
+        #self.componentVariancePercentages = [abs(x) / abs(sum(eigValues)) for x in eigValues]
+        self.componentVariancePercentages = [abs(numpy.var(x)) / sum_of_variances for x in data]
+        self.labeledComponents            = [self._headings[x+1] for x in components]
 
     def _getSomeData(self, fileURL = "data.csv"): # STEP 1
         """Read in a CSV, scrubbing input for sanity as we go.  Cast everything to floats.
@@ -85,7 +93,7 @@ class JData(object):
         data = copy.deepcopy(self.data)
         for i in range(len(data)):
             mu = data[i].mean()
-            self._means.append(mu)
+            self.means.append(mu)
             data[i] = data[i] - mu
         return data
 
@@ -100,6 +108,32 @@ class JData(object):
         if (n < 1):
             return indices
         return indices[:n]
+
+    def reset(self, nparray, compCount = -1):
+        """Use nparray as the data table and recalculate all our stats.
+
+        To use a numpy array as a source instead of a file, create the JData object with
+        filename None, and then call reset with the name of the numpy array.
+        """
+        self._headings = []
+        self._names    = []
+        self.means    = []
+
+        self.data = nparray                      # 1
+        norm_data = self._subtractTheMeans()     # 2
+        self.norm_data = norm_data
+        covariance = numpy.cov(norm_data)        # 3
+        self.covariance = covariance
+        eigValues, eigVectors = scipy.linalg.eig(covariance) # 4
+        components = self._chooseComponents(eigValues, eigVectors, compCount)   # 5
+        self.components = components
+        if self._headings:
+            self.labeledComponents = [self._headings[x+1] for x in components]
+        self.componentVariancePercentages = [abs(x) / abs(sum(eigValues)) for x in eigValues]
+        self.eigenVectors = eigVectors
+        self.eigenValues = eigValues
+
+
 
 
 #########################################################################################
@@ -124,7 +158,7 @@ def test_ObjectAllComponents():
     finalData = numpy.inner(features.transpose(), data.norm_data.transpose()) # Step 6
     dataRecovery = numpy.inner(features, finalData.transpose())
     for i in range(len(dataRecovery)):
-        mu = data._means[i]
+        mu = data.means[i]
         dataRecovery[i] = dataRecovery[i] + mu
 
     deltas = abs(dataRecovery - data.data)

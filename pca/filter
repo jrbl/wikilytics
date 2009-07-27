@@ -1,0 +1,81 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#########+#########+#########+#########+#########+#########+#########+#########+#########+#########+#########+#########+
+"""A collection of functions for filtering CSV data and a CLI to run them.
+
+Assumes a pipeline: input on stdin, output on stdout.  Attempts to do
+minimal buffering to memory.
+"""
+
+
+import sys
+import csv
+
+
+def util_calc_ver():
+    """FIXME: want to stat self, get datestamp, format and return that."""
+    return sys.argv[0] + " 1.0"
+
+def trim_row_N(iterable, N):
+    counter = 0
+    for row in iterable:
+        if (counter != N):
+            yield row
+        counter += 1
+
+def trim_col_N(iterable, N):
+    next = N+1
+    for row in iterable:
+        yield row[:N] + row[next:]
+
+def number(val):
+    """coerces strings to floats or ints depending on presence of period"""
+    if '.' in val:
+        return float(val)
+    return int(val)
+
+def trim_col_eq_val(iterable, col, val):
+    for row in iterable:
+        if (number(row[col]) != number(val)):
+            yield row 
+
+def trim_col_lt_val(iterable, col, val):
+    for row in iterable:
+        if (number(row[col]) >= number(val)):
+            yield row 
+
+def trim_col_gt_val(col, val):
+    for row in iterable:
+        if (number(row[col]) <= number(val)):
+            yield row 
+
+
+if __name__ == "__main__":
+
+    import optparse
+
+    iterable = csv.reader(sys.stdin)
+
+    parser = optparse.OptionParser(version=util_calc_ver())
+    parser.add_option('-r', "--trim-row", action="store", type="int", dest="r", metavar="ROW", help="trims row number ROW")
+    parser.add_option('-c', "--trim-col", action="store", type="int", dest="c", metavar="COL", help="trims column number COL")
+    parser.add_option('', "--ceq", action="store", nargs=2, dest="ceq_tup", metavar="COL VAL", help="trims column COL if its value is VAL")
+    parser.add_option('', "--clt", action="store", nargs=2, dest="clt_tup", metavar="COL VAL", help="trims row if column COL has value less than VAL.  ORs with --ceq.")
+    parser.add_option('', "--cgt", action="store", nargs=2, dest="cgt_tup", metavar="COL VAL", help="trims row if column COL has value greater than VAL.  ORs with --ceq.")
+    options, args = parser.parse_args()
+
+    if (options.r != None): 
+        iterable = trim_row_N(iterable, options.r)
+    if (options.c != None): 
+        iterable = trim_col_N(iterable, options.c)
+    if (options.ceq_tup != None): 
+        iterable = trim_col_eq_val( iterable, int(options.ceq_tup[0]), options.ceq_tup[1] )
+    if (options.clt_tup and options.cgt_tup):
+        parser.error("ceq may be combined with clt or cgt, but clt and cgt are mutually exclusive.")
+    if (options.clt_tup):
+        iterable = trim_col_lt_val( iterable, int(options.clt_tup[0]), options.clt_tup[1] )
+    if (options.cgt_tup):
+        iterable = trim_col_gt_val( iterable, int(options.cgt_tup[0]), options.cgt_tup[1] )
+
+    csv.register_dialect("ooffice_like", delimiter=',', skipinitialspace=True, lineterminator="\n", quoting=csv.QUOTE_NONNUMERIC)
+    csv.writer(sys.stdout, dialect="ooffice_like").writerows(iterable)
