@@ -70,17 +70,17 @@ class JData(object):
         fileHandle = numpy.DataSource().open(fileURL)
         rdr = csv.reader(fileHandle)
         input = []
+        req_rowlen = 0
         for row in rdr:
-            if (len(self._headings) == 0):          # filter 0th row
+            if (req_rowlen == 0):          # filter 0th row
                 self._headings = row
+                req_rowlen = len(self._headings)
                 continue
-            elif (len(row) != len(self._headings)): # filter weird rows
+            elif (len(row) != req_rowlen): # filter weird rows
                 continue
             else:
-                for x in range(len(row)):     # floatify all numeric values
-                    if (x == 0):              # ...except the data label!
-                        self._names.append(row[x])                                             
-                        continue  
+                self._names.append(row[0])
+                for x in range(1,len(row)): # floatify all numeric values
                     row[x] = float(row[x])
                 input.append(row[1:])         # leave label out of dataset
         

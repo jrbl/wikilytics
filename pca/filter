@@ -30,9 +30,12 @@ def trim_col_N(iterable, N):
 
 def number(val):
     """coerces strings to floats or ints depending on presence of period"""
-    if '.' in val:
-        return float(val)
-    return int(val)
+    try:
+        if '.' in val:
+            return float(val)
+        return int(val)
+    except ValueError:
+        return val
 
 def trim_col_eq_val(iterable, col, val):
     for row in iterable:
@@ -44,7 +47,7 @@ def trim_col_lt_val(iterable, col, val):
         if (number(row[col]) >= number(val)):
             yield row 
 
-def trim_col_gt_val(col, val):
+def trim_col_gt_val(iterable, col, val):
     for row in iterable:
         if (number(row[col]) <= number(val)):
             yield row 

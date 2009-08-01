@@ -4,9 +4,14 @@ and http://jrbl.livejournal.com/108325.html
 pca/
   - initial pass at pca implementation, might generalize into do-all
     data handling library at some point
+  - filter script to trim columns and rows from CSV files
 
 kmeans/
   - k-means clustering of a dataset; relies on JData in pca/
+
+plotting/
+  - toying around with ways to make charts out of the data; relies on
+    JData in pca/
 
 scrub/
   - anonymize an input data set so that hopefully we'll be allowed to publish it

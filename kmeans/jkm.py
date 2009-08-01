@@ -26,7 +26,9 @@ import scipy.cluster.vq as vq
 from JData import JData as Data 
 
 
+DEBUG = False
 CLUSTERS = 4
+TRIALS = 1000
 
 
 def count(l, v):
@@ -39,11 +41,14 @@ def findall(l, v):
         if l[i] == v:
             yield i
 
+def do_cluster(cluster_count, filename):
+    """Use the scipy k-means clustering algorithms to cluster data.
 
-if __name__ == "__main__":
-    input = Data('data.csv', -1)
+    Return the item names for the smallest cluster.
+    """
+    input = Data(filename, -1)
     d = vq.whiten(input.data.transpose())
-    codebook, avg_distortion = vq.kmeans(d, CLUSTERS, 150)
+    codebook, avg_distortion = vq.kmeans(d, cluster_count, 150)
     codes, distortions = vq.vq(d, codebook)
 
     # codes is now a vector of cluster assignments
@@ -51,16 +56,54 @@ if __name__ == "__main__":
 
     c_sizes = {}
     small_i = 0
-    print "Cluster Sizes: ",
-    for i in range(CLUSTERS):
+    if DEBUG: print "Cluster Sizes: ",
+    for i in range(cluster_count):
         c_sizes[i] = count(codes, i)
-        print c_sizes[i],
-    print
-    for i in range(CLUSTERS):
+        if DEBUG: print c_sizes[i],
+    if DEBUG: print
+    for i in range(cluster_count):
         if c_sizes[i] < c_sizes[small_i]: 
             small_i = i
 
-    print "Smallest cluster size: " + str(c_sizes[small_i])
+    if DEBUG: print "Smallest cluster size: " + str(c_sizes[small_i])
 
-    for i in findall(codes, small_i):
-        print "\t" + input._names[i] 
+    return [input._names[i] for i in findall(codes, small_i)]
+
+
+if __name__ == "__main__":
+
+    files  = ['withRC.csv', 'noRC.csv']
+
+    for FILE in files:
+        small_members = {}
+
+        for i in range(TRIALS):
+            print "Run " + str(i) + ".. ",
+            smallest = do_cluster(CLUSTERS, FILE)
+            print "done." + str(len(smallest))
+            sys.stdout.flush()
+
+            for key in smallest:
+                try:
+                    small_members[key] += 1
+                except KeyError:
+                    small_members[key] = 1
+
+        # who are the winners?
+        keys = small_members.keys()
+        vals = [small_members[key] for key in keys]
+        indices = range(len(keys))
+
+        def byVal_Comp(x, y):
+            if vals[x] < vals[y]:
+                return -1
+            elif vals[x] > vals[y]:
+                return 1
+            else:
+                return 0
+
+        indices.sort(cmp=byVal_Comp, reverse=True)
+        outfile = open(FILE+'.out', 'w')
+        for i in indices:
+            outfile.write(keys[i] + ',' + str(vals[i]) + '\n')
+        outfile.close()
