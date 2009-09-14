@@ -1,5 +1,6 @@
 Cf. http://forge.blueoxen.net/wiki/Wiki_Analytics
 and http://jrbl.livejournal.com/108325.html
+See also: CollabStats project, on GitHub
 
 pca/
   - initial pass at pca implementation, might generalize into do-all
