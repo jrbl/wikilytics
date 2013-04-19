@@ -15,4 +15,5 @@ plotting/
     JData in pca/
 
 scrub/
-  - anonymize an input data set so that hopefully we'll be allowed to publish it
+  - anonymize an input data set so that hopefully we'll be allowed to 
+    publish it
